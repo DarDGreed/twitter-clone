@@ -5,6 +5,7 @@ import {v2 as cloudinary} from "cloudinary"
 
 import authRoutes from "./routes/auth.route.js"
 import userRoutes from "./routes/user.routes.js"
+import postRoutes from "./routes/post.route.js"
 
 import connectDB from "./config/connectDB.js"
 
@@ -29,6 +30,7 @@ app.get("/", (req,res) => {
 
 app.use("/api/auth", authRoutes)
 app.use("/api/users", userRoutes)
+app.use("/api/posts", postRoutes)
 
 app.listen(PORT, () => {
   console.log(`listening to http://localhost:${PORT}`)
