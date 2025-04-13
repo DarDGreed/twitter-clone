@@ -21,7 +21,7 @@ cloudinary.config({
 }) // to configure cloudinary
 
 // Middleware
-app.use(express.json()) // to parse JSON data
+app.use(express.json({limit: "5mb"})) // to parse JSON data
 app.use(express.urlencoded({extended: true})) // to parse form data
 app.use(cookieParser()) // to parse cookies
 
