@@ -26,6 +26,7 @@ const Post = ({ post }) => {
         const res = await fetch(`/api/posts/${post._id}`,{
           method: "DELETE"
         })
+        console.log(post._id)
         const data = await res.json()
         if(!res.ok) throw new Error(data.error)
         return data

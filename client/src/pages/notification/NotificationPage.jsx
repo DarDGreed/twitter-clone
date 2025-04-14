@@ -2,15 +2,69 @@ import { Link } from "react-router-dom";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 
 import { IoSettingsOutline } from "react-icons/io5";
-import { FaUser } from "react-icons/fa";
+import { FaTrash, FaUser } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa6";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const NotificationPage = () => {
-  
-  const deleteNotifications = () => {
-    alert("All notifications deleted");
-  };
+  const queryClient = useQueryClient()
+  const {data:notifications, isLoading} = useQuery({
+    queryKey: ["notifications"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/notifications")
+        const data = await res.json()
+        if(!res.ok) throw new Error(data.error)
+        return data
+      } catch (error) {
+        throw new Error(error.message)
+      }
+    }
+  })
+
+  const {mutate:deleteNotifications, isPending:isDeleting} = useMutation({
+    mutationFn: async () => {
+      try{const res = await fetch("/api/notifications",{
+        method: "DELETE"
+      })
+      const data = res.json()
+      if(!res.ok) throw new Error(data.error)
+      return data
+      }catch (error) {
+        throw new Error(error.message)
+      }
+    },
+    onSuccess: () => {
+      toast.success("Notifications deleted successfully")
+      queryClient.invalidateQueries({queryKey: ["notifications"]})
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    }
+  })
+
+  const {mutate:deleteNotification, isPending:isSingleDeleting} = useMutation({
+    mutationFn: async (notificationId) => {
+      try {
+        const res = await fetch(`/api/notifications/${notificationId}`,{
+          method: "DELETE"
+        })
+        const data = await res.json()
+        if(!res.ok) throw new Error(data.error)
+        return data
+      } catch (error) {
+        throw new Error(error.message)
+      }
+    },
+    onSuccess: () => {
+      toast.success("Deleted Successfully")
+      queryClient.invalidateQueries({queryKey: ["notifications"]})
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    }
+  })
 
   return (
     <>
@@ -19,7 +73,7 @@ const NotificationPage = () => {
           <p className='font-bold'>Notifications</p>
           <div className='dropdown '>
             <div tabIndex={0} role='button' className='m-1'>
-              <IoSettingsOutline className='w-4' />
+              <IoSettingsOutline className='w-4 cursor-pointer' />
             </div>
             <ul
               tabIndex={0}
@@ -52,7 +106,14 @@ const NotificationPage = () => {
                   <span className='font-bold'>@{notification.from.username}</span>{" "}
                   {notification.type === "follow" ? "followed you" : "liked your post"}
                 </div>
+                
               </Link>
+              <span className='flex justify-end flex-1'>
+                {!isSingleDeleting && (<FaTrash className='cursor-pointer hover:text-red-500' onClick={() => deleteNotification(notification._id)} />)}
+                {isSingleDeleting && (
+                  <LoadingSpinner size="sm" />
+                )}
+              </span>
             </div>
           </div>
         ))}

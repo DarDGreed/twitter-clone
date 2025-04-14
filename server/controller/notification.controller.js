@@ -10,7 +10,9 @@ export const getNotifications = async (req, res) => {
     })
 
     await Notification.updateMany({to:userId}, {read:true})
-    res.status(200).json(notifications)
+    const filteredNotifications = notifications.filter(notification => notification.from._id.toString() !== userId.toString());
+    res.status(200).json(filteredNotifications);
+    return;
   } catch (error) {
     console.error("Error in getNotification controller", error)
     res.status(500).json({error: "Internal server error"})
@@ -42,7 +44,7 @@ export const deleteNotification = async (req, res) => {
     if(notification.to.toString() !== userId.toString()){
       return res.status(403).json({error: "You are not allowed to delete this"})
     } 
-    await Notification.findByIdAndUpdate(notificationId)
+    await Notification.findByIdAndDelete(notificationId)
     res.status(200).json({message: "Notification deleted Successfully"})
   } catch (error) {
     console.error("Error in deleteNotification controller", error)
